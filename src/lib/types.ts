@@ -1,4 +1,3 @@
-// src/lib/types.ts
 export type FieldType =
   | "text"
   | "number"
