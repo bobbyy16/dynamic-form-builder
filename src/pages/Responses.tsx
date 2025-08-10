@@ -139,7 +139,7 @@ export default function Responses() {
                         <th className="border border-gray-200 px-3 py-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">
                           Form Name
                         </th>
-                        {allFields.map((field, index) => (
+                        {allFields.map((field) => (
                           <th
                             key={field}
                             className="border border-gray-200 px-3 py-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]"

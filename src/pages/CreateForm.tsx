@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Save, Eye, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Save, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,12 +17,10 @@ import { toast } from "sonner";
 import { Navigation } from "@/components/Navigation";
 import type { FieldType, FormField, FormSchema } from "@/lib/types";
 import { saveFormToLocalStorage } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
 
 export default function CreateForm() {
   const [formName, setFormName] = useState("");
   const [fields, setFields] = useState<FormField[]>([]);
-  const navigate = useNavigate();
 
   const fieldTypes: { value: FieldType; label: string }[] = [
     { value: "text", label: "Text Input" },
@@ -123,7 +121,6 @@ export default function CreateForm() {
       return false;
     }
 
-    // Validate fields
     for (const field of fields) {
       if (!field.label.trim()) {
         toast.error("Please enter labels for all fields");
@@ -176,25 +173,6 @@ export default function CreateForm() {
     } catch (error) {
       console.error("Error saving form:", error);
       toast.error("Error saving form. Please try again.");
-    }
-  };
-
-  const previewForm = () => {
-    if (!validateForm()) return;
-
-    const formSchema: FormSchema = {
-      id: "preview-" + Date.now(),
-      name: formName,
-      createdAt: new Date().toISOString(),
-      fields: fields,
-    };
-
-    try {
-      localStorage.setItem("previewForm", JSON.stringify(formSchema));
-      navigate(`/preview?id=${formSchema.id}`);
-    } catch (error) {
-      console.error("Error preparing form for preview:", error);
-      toast.error("Error preparing form for preview. Please try again.");
     }
   };
 
@@ -342,7 +320,6 @@ export default function CreateForm() {
                     </div>
                   </div>
 
-                  {/* Default Value for non-derived fields */}
                   {field.type !== "derived" &&
                     (field.type === "text" ||
                       field.type === "password" ||
@@ -394,7 +371,6 @@ export default function CreateForm() {
                     </div>
                   )}
 
-                  {/* Options for select, radio, checkbox */}
                   {needsOptions(field.type) && (
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
@@ -438,7 +414,6 @@ export default function CreateForm() {
                     </div>
                   )}
 
-                  {/* Derived field configuration */}
                   {field.type === "derived" && (
                     <div className="space-y-4 p-4 bg-blue-50 rounded-lg border">
                       <h4 className="font-medium text-blue-900">
@@ -472,8 +447,8 @@ export default function CreateForm() {
 
                                     updateField(field.id, {
                                       derived: {
-                                        ...field.derived,
                                         parentFields: newParents,
+                                        formula: field.derived?.formula || "",
                                       },
                                     });
                                   }}
@@ -504,7 +479,7 @@ export default function CreateForm() {
                           onChange={(e) =>
                             updateField(field.id, {
                               derived: {
-                                ...field.derived,
+                                parentFields: field.derived?.parentFields || [],
                                 formula: e.target.value,
                               },
                             })
@@ -525,7 +500,6 @@ export default function CreateForm() {
                     </div>
                   )}
 
-                  {/* Validation Rules */}
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
