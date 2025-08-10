@@ -3,7 +3,7 @@
 A powerful, intuitive form builder application built with React and TypeScript. Create, customize, and manage dynamic forms with real-time preview and advanced validation features.
 
 ![Form Builder Screenshot](https://raw.githubusercontent.com/bobbyy16/dynamic-form-builder/main/src/assets/screenshot.png)
-![Demo](https://www.loom.com/share/4b51caec70f348f9bb468ae6a6f2c0c7?sid=9291559a-bc31-4aa2-a37f-1c1a45f1d7d3)
+[Demo video](https://www.loom.com/share/4b51caec70f348f9bb468ae6a6f2c0c7?sid=9291559a-bc31-4aa2-a37f-1c1a45f1d7d3)
 
 ## ✨ Features
 
