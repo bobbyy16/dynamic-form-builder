@@ -6,12 +6,16 @@ export type FieldType =
   | "radio"
   | "checkbox"
   | "date"
+  | "mobile"
+  | "password"
   | "derived";
 
 export interface ValidationRule {
   required?: boolean;
   minLength?: number;
   maxLength?: number;
+  min?: number;
+  max?: number;
   email?: boolean;
   password?: boolean;
 }
@@ -21,7 +25,7 @@ export interface FormField {
   type: FieldType;
   label: string;
   defaultValue?: any;
-  options?: string[]; // for select, radio, checkbox
+  options?: string[];
   validation?: ValidationRule;
   derived?: {
     parentFields: string[];
