@@ -68,7 +68,12 @@ export default function Home() {
                 size="lg"
                 className="w-full sm:w-auto text-lg px-8 py-6 bg-transparent"
               >
-                View Demo
+                <Link
+                  target="_blank"
+                  to="https://www.loom.com/share/4b51caec70f348f9bb468ae6a6f2c0c7?sid=9291559a-bc31-4aa2-a37f-1c1a45f1d7d3"
+                >
+                  View Demo
+                </Link>
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
