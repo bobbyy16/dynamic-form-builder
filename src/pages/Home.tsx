@@ -39,44 +39,43 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <Navigation />
       </div>
+
       {/* Hero Section */}
       <section className="relative py-12 md:py-20 lg:py-24 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="flex justify-center mb-6"></div>
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Build Beautiful Forms
               <span className="block text-primary">In Minutes</span>
             </h1>
-
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Create stunning, responsive forms without any coding. Perfect for
               surveys, contact forms, registrations, and more.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto text-lg px-8 py-6"
+                asChild
+              >
                 <Link to="/create">
-                  <span>Get Started Free</span>
+                  Get Started Free
+                  <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
-                <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto text-lg px-8 py-6"
+                className="w-full sm:w-auto text-lg px-8 py-6 bg-transparent"
               >
                 View Demo
               </Button>
             </div>
-
             <p className="text-sm text-muted-foreground mt-4">
               No credit card required • Free forever plan available
             </p>
           </div>
         </div>
-
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
@@ -96,7 +95,6 @@ export default function Home() {
               effectively.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {features.map((feature, index) => (
               <div
@@ -121,7 +119,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 md:py-20 bg-accent/5">
+      <section className="py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
             Everything You Need in One Place
@@ -130,7 +128,6 @@ export default function Home() {
             From simple contact forms to complex surveys, our platform provides
             all the tools you need to collect and manage data effectively.
           </p>
-
           <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
             {benefits.map((benefit, index) => (
               <div
@@ -155,12 +152,16 @@ export default function Home() {
             Join thousands of users who trust our platform to collect and manage
             their data.
           </p>
-
-          <Button variant="secondary" size="lg" className="text-lg px-8 py-6">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="text-lg px-8 py-6"
+            asChild
+          >
             <Link to="/create">
-              <span>Get Started Free</span>
+              Get Started Free
+              <ArrowRight className="h-5 w-5 ml-2" />
             </Link>
-            <ArrowRight className="h-5 w-5 ml-2" />
           </Button>
         </div>
       </section>
