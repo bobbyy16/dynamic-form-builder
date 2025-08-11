@@ -19,7 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Navigation } from "@/components/Navigation";
-import type { FieldType, FormField, FormSchema } from "@/lib/types";
+import type { FieldType, FormField } from "@/lib/types";
 import { getFormById, updateFormInLocalStorage } from "@/lib/utils";
 
 export default function EditForm() {
