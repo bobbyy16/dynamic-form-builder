@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setForm, resetForm } from "@/store/formSlice";
+import type { RootState } from "@/store";
 import { Plus, Trash2, Save, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +22,13 @@ import type { FieldType, FormField, FormSchema } from "@/lib/types";
 import { saveFormToLocalStorage } from "@/lib/utils";
 
 export default function CreateForm() {
+  const dispatch = useDispatch();
+
+  // Get form data from Redux store
+  const form = useSelector((state: RootState) => state.form);
+
+  // Only keep formName in local state since it's not part of the form schema initially
   const [formName, setFormName] = useState("");
-  const [fields, setFields] = useState<FormField[]>([]);
 
   const fieldTypes: { value: FieldType; label: string }[] = [
     { value: "text", label: "Text Input" },
@@ -42,23 +50,44 @@ export default function CreateForm() {
       label: "",
       validation: {},
     };
-    setFields([...fields, newField]);
+
+    // Update Redux store
+    dispatch(
+      setForm({
+        ...form,
+        fields: [...form.fields, newField],
+      })
+    );
   };
 
   const updateField = (id: string, updates: Partial<FormField>) => {
-    setFields(
-      fields.map((field) =>
-        field.id === id ? { ...field, ...updates } : field
-      )
+    const updatedFields = form.fields.map((field) =>
+      field.id === id ? { ...field, ...updates } : field
+    );
+
+    // Update Redux store
+    dispatch(
+      setForm({
+        ...form,
+        fields: updatedFields,
+      })
     );
   };
 
   const removeField = (id: string) => {
-    setFields(fields.filter((field) => field.id !== id));
+    const updatedFields = form.fields.filter((field) => field.id !== id);
+
+    // Update Redux store
+    dispatch(
+      setForm({
+        ...form,
+        fields: updatedFields,
+      })
+    );
   };
 
   const moveField = (index: number, direction: "up" | "down") => {
-    const newFields = [...fields];
+    const newFields = [...form.fields];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
 
     if (targetIndex >= 0 && targetIndex < newFields.length) {
@@ -66,12 +95,19 @@ export default function CreateForm() {
         newFields[targetIndex],
         newFields[index],
       ];
-      setFields(newFields);
+
+      // Update Redux store
+      dispatch(
+        setForm({
+          ...form,
+          fields: newFields,
+        })
+      );
     }
   };
 
   const addOption = (fieldId: string) => {
-    const field = fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field) {
       const options = field.options || [];
       updateField(fieldId, { options: [...options, ""] });
@@ -83,7 +119,7 @@ export default function CreateForm() {
     optionIndex: number,
     value: string
   ) => {
-    const field = fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field && field.options) {
       const newOptions = [...field.options];
       newOptions[optionIndex] = value;
@@ -92,7 +128,7 @@ export default function CreateForm() {
   };
 
   const removeOption = (fieldId: string, optionIndex: number) => {
-    const field = fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field && field.options) {
       const newOptions = field.options.filter((_, i) => i !== optionIndex);
       updateField(fieldId, { options: newOptions });
@@ -100,7 +136,7 @@ export default function CreateForm() {
   };
 
   const updateValidation = (fieldId: string, key: string, value: any) => {
-    const field = fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field) {
       updateField(fieldId, {
         validation: {
@@ -116,12 +152,12 @@ export default function CreateForm() {
       toast.error("Please enter a form name");
       return false;
     }
-    if (fields.length === 0) {
+    if (form.fields.length === 0) {
       toast.error("Please add at least one field");
       return false;
     }
 
-    for (const field of fields) {
+    for (const field of form.fields) {
       if (!field.label.trim()) {
         toast.error("Please enter labels for all fields");
         return false;
@@ -162,14 +198,16 @@ export default function CreateForm() {
       id: Date.now().toString(),
       name: formName,
       createdAt: new Date().toISOString(),
-      fields: fields,
+      fields: form.fields,
     };
 
     try {
       saveFormToLocalStorage(formSchema);
       toast.success("Form saved successfully!");
+
+      // Reset Redux store and local state
+      dispatch(resetForm());
       setFormName("");
-      setFields([]);
     } catch (error) {
       console.error("Error saving form:", error);
       toast.error("Error saving form. Please try again.");
@@ -185,7 +223,7 @@ export default function CreateForm() {
   };
 
   const getAvailableParentFields = (currentFieldId: string) => {
-    return fields.filter(
+    return form.fields.filter(
       (f) => f.id !== currentFieldId && f.type !== "derived"
     );
   };
@@ -231,7 +269,7 @@ export default function CreateForm() {
             </Button>
           </div>
 
-          {fields.length === 0 ? (
+          {form.fields.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <p className="text-gray-500 mb-4">No fields added yet</p>
@@ -246,7 +284,7 @@ export default function CreateForm() {
               </CardContent>
             </Card>
           ) : (
-            fields.map((field, index) => (
+            form.fields.map((field, index) => (
               <Card key={field.id}>
                 <CardHeader>
                   <div className="flex justify-between items-center">
@@ -264,7 +302,7 @@ export default function CreateForm() {
                         onClick={() => moveField(index, "down")}
                         variant="outline"
                         size="sm"
-                        disabled={index === fields.length - 1}
+                        disabled={index === form.fields.length - 1}
                       >
                         <ArrowDown className="h-4 w-4" />
                       </Button>
@@ -489,7 +527,9 @@ export default function CreateForm() {
                           <strong>Available variables:</strong>{" "}
                           {field.derived?.parentFields
                             ?.map((pid) => {
-                              const parent = fields.find((f) => f.id === pid);
+                              const parent = form.fields.find(
+                                (f) => f.id === pid
+                              );
                               return parent
                                 ? `${pid} (${parent.label || "unlabeled"})`
                                 : pid;
@@ -637,7 +677,7 @@ export default function CreateForm() {
           )}
         </div>
 
-        {fields.length > 0 && (
+        {form.fields.length > 0 && (
           <div className="flex gap-4 justify-between mt-8">
             <Button onClick={addField} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />

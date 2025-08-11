@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setForm, resetForm } from "@/store/formSlice";
+import type { RootState } from "@/store";
 import { Plus, Trash2, Save, Edit2, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +23,16 @@ import type { FieldType, FormField, FormSchema } from "@/lib/types";
 import { getFormById, updateFormInLocalStorage } from "@/lib/utils";
 
 export default function EditForm() {
-  const [form, setForm] = useState<FormSchema | null>(null);
+  const dispatch = useDispatch();
+
+  // Get form data from Redux store
+  const form = useSelector((state: RootState) => state.form);
+
+  // Only keep formName and loading in local state
   const [formName, setFormName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [formLoaded, setFormLoaded] = useState(false);
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const formId = searchParams.get("id");
@@ -44,8 +54,10 @@ export default function EditForm() {
     if (formId) {
       const formData = getFormById(formId);
       if (formData) {
-        setForm(formData);
+        // Load form data into Redux store
+        dispatch(setForm(formData));
         setFormName(formData.name);
+        setFormLoaded(true);
       } else {
         toast.error("Form not found");
         navigate("/myforms");
@@ -55,37 +67,46 @@ export default function EditForm() {
       navigate("/myforms");
     }
     setLoading(false);
-  }, [formId, navigate]);
+  }, [formId, navigate, dispatch]);
+
+  // Clean up Redux state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(resetForm());
+    };
+  }, [dispatch]);
 
   const updateField = (id: string, updates: Partial<FormField>) => {
-    if (!form) return;
     const updatedFields = form.fields.map((field: FormField) =>
       field.id === id ? { ...field, ...updates } : field
     );
-    setForm({ ...form, fields: updatedFields });
+
+    // Update Redux store
+    dispatch(setForm({ ...form, fields: updatedFields }));
   };
 
   const removeField = (id: string) => {
-    if (!form) return;
     const updatedFields = form.fields.filter(
       (field: FormField) => field.id !== id
     );
-    setForm({ ...form, fields: updatedFields });
+
+    // Update Redux store
+    dispatch(setForm({ ...form, fields: updatedFields }));
   };
 
   const addField = () => {
-    if (!form) return;
     const newField: FormField = {
       id: Date.now().toString(),
       type: "text",
       label: "",
       validation: {},
     };
-    setForm({ ...form, fields: [...form.fields, newField] });
+
+    // Update Redux store
+    dispatch(setForm({ ...form, fields: [...form.fields, newField] }));
   };
 
   const moveField = (index: number, direction: "up" | "down") => {
-    if (!form) return;
     const newFields = [...form.fields];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
 
@@ -94,12 +115,14 @@ export default function EditForm() {
         newFields[targetIndex],
         newFields[index],
       ];
-      setForm({ ...form, fields: newFields });
+
+      // Update Redux store
+      dispatch(setForm({ ...form, fields: newFields }));
     }
   };
 
   const addOption = (fieldId: string) => {
-    const field = form?.fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field) {
       const options = field.options || [];
       updateField(fieldId, { options: [...options, ""] });
@@ -111,7 +134,7 @@ export default function EditForm() {
     optionIndex: number,
     value: string
   ) => {
-    const field = form?.fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field && field.options) {
       const newOptions = [...field.options];
       newOptions[optionIndex] = value;
@@ -120,7 +143,7 @@ export default function EditForm() {
   };
 
   const removeOption = (fieldId: string, optionIndex: number) => {
-    const field = form?.fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field && field.options) {
       const newOptions = field.options.filter((_, i) => i !== optionIndex);
       updateField(fieldId, { options: newOptions });
@@ -128,7 +151,7 @@ export default function EditForm() {
   };
 
   const updateValidation = (fieldId: string, key: string, value: any) => {
-    const field = form?.fields.find((f) => f.id === fieldId);
+    const field = form.fields.find((f) => f.id === fieldId);
     if (field) {
       updateField(fieldId, {
         validation: {
@@ -140,7 +163,7 @@ export default function EditForm() {
   };
 
   const validateForm = () => {
-    if (!form || !formName.trim()) {
+    if (!formName.trim()) {
       toast.error("Please enter a form name");
       return false;
     }
@@ -188,12 +211,15 @@ export default function EditForm() {
 
     try {
       const updatedForm = {
-        ...form!,
+        ...form,
         name: formName,
         updatedAt: new Date().toISOString(),
       };
       updateFormInLocalStorage(updatedForm);
       toast.success("Form updated successfully!");
+
+      // Reset Redux state and navigate back
+      dispatch(resetForm());
       navigate("/myforms");
     } catch (error) {
       console.error("Error updating form:", error);
@@ -210,10 +236,8 @@ export default function EditForm() {
   };
 
   const getAvailableParentFields = (currentFieldId: string) => {
-    return (
-      form?.fields.filter(
-        (f) => f.id !== currentFieldId && f.type !== "derived"
-      ) || []
+    return form.fields.filter(
+      (f) => f.id !== currentFieldId && f.type !== "derived"
     );
   };
 
@@ -235,7 +259,7 @@ export default function EditForm() {
     );
   }
 
-  if (!form) {
+  if (!formLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -712,7 +736,7 @@ export default function EditForm() {
           )}
         </div>
 
-        {form && form.fields.length > 0 && (
+        {form.fields.length > 0 && (
           <div className="flex justify-between mt-8">
             <Button onClick={addField} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
